@@ -1,8 +1,9 @@
 from xlrd import open_workbook,XL_CELL_TEXT
 from tkinter import *
+from tkinter import ttk
 
 # Pentru xlrd:
-book = open_workbook("D:\Kiki\Kevin's Stuff\Scoala\pt info\Test interactiv\Intrebari.xlsx")
+book = open_workbook("Intrebari.xlsx")
 sheet = book.sheet_by_index(0)
 
 class TestInteractiv(Tk):
@@ -17,7 +18,7 @@ class TestInteractiv(Tk):
 
 		self.frames = {}
 
-		for F in (StartPage, PaginaQuiz):
+		for F in (StartPage, PaginaQuiz, ScorPage):
 			frame = F(container, self)
 
 			self.frames[F] = frame
@@ -36,14 +37,15 @@ class StartPage(Frame):
 		Frame.__init__(self, parent)
 		label = Label(self, text = "Introdu numele tau:")
 		label.pack()
-		buton = Button(self, text = "Gata!", command = lambda: controller.show_frame(PaginaQuiz))
+		buton = ttk.Button(self, text = "Gata!", command = lambda: controller.show_frame(PaginaQuiz))
 		buton.pack()
+
 
 class PaginaQuiz(Frame):
 	def __init__(self, parent, controller):
 		Frame.__init__(self, parent)
 		# Pentru stocarea in timp real a var butoanelor selectate:
-		raspunsuri_alese = []
+		self.raspunsuri_alese = []
 
 
 		# 1. Get number of questions
@@ -54,7 +56,7 @@ class PaginaQuiz(Frame):
 		# 2.1. Create lists for questions and answers
 		intrebari = []
 		raspunsuri = []
-		raspunsuri_corecte = []
+		self.raspunsuri_corecte = []
 
 		for i in range(1,intrebari_total):
 			#2.2. Append questions:
@@ -73,7 +75,7 @@ class PaginaQuiz(Frame):
 			#2.5. Get corect answer:
 			raspuns_corect = sheet.cell(i,6)
 			#print(int(raspuns_corect.value))
-			raspunsuri_corecte.append(int(raspuns_corect.value))
+			self.raspunsuri_corecte.append(int(raspuns_corect.value))
 
 		#PENTRU DEBBUGING (a se adauga command = testare ca atribut la Radiobuttons):
 		#def testare():
@@ -104,7 +106,7 @@ class PaginaQuiz(Frame):
 
 			# Pentru event listening:
 			cititor = IntVar()
-			raspunsuri_alese.append(cititor)
+			self.raspunsuri_alese.append(cititor)
 			for k in lista:
 				#print(k)
 				#Do it radio (value nu e terminat inca)
@@ -124,23 +126,29 @@ class PaginaQuiz(Frame):
 
 
 		# 4.2. Creare buton
-	#	gata = Button(self, text="Am terminat!", command=self.verificare())
-		gata = Button(self, text = "Gata!")
+	#	gata = ttk.Button(self, text="Am terminat!", command=self.verificare())
+		gata = ttk.Button(self, text = "Gata!", command = lambda : self.verificare(controller))
 		gata.pack()
 
 	# 4.1. Creare functie de verificare rezultate
-	#def verificare(self):
-	#	contor = 0
-	#	for item in range(len(raspunsuri_corecte)):
-	#		raspuns_ales_selectat = raspunsuri_alese[item].get()
+	def verificare(self, controller):
+		self.contor = 0
+		for item in range(len(self.raspunsuri_corecte)):
+			raspuns_ales_selectat = self.raspunsuri_alese[item].get()
 			# print(raspunsuri_corecte[i])
 			# print(raspuns_ales_selectat)
-	#		if raspunsuri_corecte[item] == raspuns_ales_selectat:
-				# print("DA")
-	#			contor += 1
-			# else:
-			# print("NU")
-	#	print(contor)
+			if self.raspunsuri_corecte[item] == raspuns_ales_selectat:
+				self.contor += 1
+		print(self.contor)
+		controller.show_frame(ScorPage)
+
+
+class ScorPage(Frame):
+	def __init__(self, parent, controller):
+		Frame.__init__(self, parent)
+		label = Label(self, text="Scorul tau este:")
+		label.pack()
+
 
 # Pentru tkinter:
 app = TestInteractiv()
